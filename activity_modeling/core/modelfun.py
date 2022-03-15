@@ -304,6 +304,10 @@ def queryroute_df(id, df, routedir = "routes", cls ='bicycle', writegpkg = True,
           # print(xcoord_home,ycoord_home,xcoord_work,ycoord_work)# home and work locations from dataframe
            
            dis, dur = r.distance(ycoord_home,xcoord_home,ycoord_work,xcoord_work, cls)
+           if dur > 1.5*3600: # if the travel time is longer than 1.5 hours with the selected travel mode, take the car
+               cls = "car"
+               dis, dur = r.distance(ycoord_home,xcoord_home,ycoord_work,xcoord_work, cls)
+               
            if writegpkg:
                if not os.path.exists("/data/projects/mobiair/"+routedir):
                    os.mkdir("/data/projects/mobiair/"+routedir)
@@ -336,7 +340,9 @@ def schedule_general_wo (duration, travelmean, filedir, free_duration = 1, name 
   work_start = home2work_end+time_interval # a very small interval like several seconds
   work_end = work2home_start-time_interval #it might be that more realistic to have a fixed time length for work
   
-  
+  if work2home_end>23.5:
+      work2home_end = 23.5 # if going home after 23:30, we will assume him going home at 23:30
+      
   if work2home_end >20.5: # at home if goes home late already. 
       outdoor_evening = 23.8 # just set to the end of the day as the freetime is still at home. 
       free_duration = 0.01 # just any small number as the freetime is still at home.   
