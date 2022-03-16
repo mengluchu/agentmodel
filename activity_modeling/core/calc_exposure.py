@@ -27,7 +27,7 @@ from math import modf
 import osmnx as ox
 from scipy import signal 
 from IPython import get_ipython
-
+import statistics
 import random
 
 random.seed(10)
@@ -189,10 +189,11 @@ def getcon(act_num, rasterfile, df, routegeom, ext = 0.001, extgaus = 2, sd=0.1,
  
 # rasterfile = f'{preddir}NL100_t{i}.tif'
 
-def remove_none(list):
-    lst = [i for i in list if i is not None]
-    arr = np.array(lst)
-    return arr
+def remove_none(lst):
+    lst = [i for i in lst if i is not None]
+   
+    
+    return lst
 '''  
 #test
 for i in range(1,7):
@@ -202,7 +203,7 @@ for i in range(1,7):
               routegeom=route.loc[j]['geometry'])
 '''
 #still doing hourly
-ext = 300 # 300 m 
+ext = 0.001 # 300 m 
 iteration = 28
 
 ODdir = savedir +"genloc/"
@@ -298,10 +299,13 @@ def cal_exp(filedir, savedir, iteration, real = False, ext = 0.001, extgaus=2, g
                     missingtimeh = missingtimeh + missingtime 
                     
             exp = conh/(end[k]-start[k]-missingtimeh+0.01) # average exp per activity
+            if not np.isscalar(exp):
+                exp.item()
             exp_each_act.append(exp)
              
             #con_each_person.append(np.nanmean(remove_none(con_each_act[k*j : (k+1)*j ]) ))      
-        meanactexp = np.nanmean(remove_none(exp_each_act[j*sched.shape[0]:(j+1)*sched.shape[0]]), keepdims =False)
+        # meanactexp = np.nanmean(remove_none(exp_each_act[j*sched.shape[0]:(j+1)*sched.shape[0]]), keepdims =False)
+        meanactexp = statistics.mean(remove_none(exp_each_act[j*sched.shape[0]:(j+1)*sched.shape[0]]))
         meanactexp = np.where(np.isscalar(meanactexp), meanactexp, meanactexp.item()).item()
         #add this because sometimes it returns a nested array like [[1]], a strange behaviour of remove_none(nparray): 
         exp_each_person.append(meanactexp)
@@ -365,8 +369,8 @@ def plotact(sub1, sub2,  act, savename="1", simplify = True, select = 0):
     fig.savefig(f'{savedir}exposure_act{savename}.png') 
 
 # known locations
-for iteration in range (29, 39): 
-    cal_exp(filedir, savedir2, iteration, real = True, save_csv = True)
+#for iteration in range (29, 39): 
+#    cal_exp(filedir, savedir2, iteration, real = True, save_csv = True)
 
 
 # simulated locations
