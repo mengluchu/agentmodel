@@ -39,8 +39,9 @@ os.chdir(scriptdir)
 #get_ipython().run_line_magic('matplotlib', 'inline')
 
 #wuhan = ox.geocode_to_gdf('武汉, China')
-#utrecht = ox.geocode_to_gdf('Utrecht province') 
-#wuhan.plot() 
+utrecht = ox.geocode_to_gdf('Utrecht') 
+
+utrecht.plot() 
 filedir = "/home/meng/Documents/GitHub/mobiair/"
 preddir =f"/home/meng/Downloads/hr_pred/"
 savedir = "/home/meng/Documents/mobiresults/Uni/" # each profile a savedir. 
@@ -260,7 +261,7 @@ def cal_exp(filedir, savedir, iteration, real = False, ext = 0.001, extgaus=2, g
                     
                     if con is not None or con is not np.nan:
                         #conh = con * (end[k]-start[k]) # start percentage multiply by concentration of the hour, next hour will get the rest of the percentage
-                        conh = constart * (start[k]-start_int[k]) + conend* (end[k]-end_int[k]) # same as using modf, start percentage multiply by concentration of the hour, end will get the rest of the percentage
+                        conh = constart * (1- (start[k]-start_int[k])) + conend* (end[k]-end_int[k]) # same as using modf, start percentage multiply by concentration of the hour, end will get the rest of the percentage
                         missingtimeh=0
                     else: 
                         conh = 0
@@ -272,7 +273,7 @@ def cal_exp(filedir, savedir, iteration, real = False, ext = 0.001, extgaus=2, g
                     #control at the beginning and in the end.
                     if i ==start_int[k]: # first hour may be from e.g. 7:20 instead of 7:00
                         if con is not None or con is not np.nan:
-                            cons = con * (1- modf(start[k])[0]) # start percentage multiply by concentration of the hour, next hour will get the rest of the percentage
+                            cons = con * (1- modf(start[k])[0]) # start percentage multiply by concentration of the hour 
                             missingtime=0
                         else: 
                             cons = 0
@@ -300,7 +301,7 @@ def cal_exp(filedir, savedir, iteration, real = False, ext = 0.001, extgaus=2, g
                     
             exp = conh/(end[k]-start[k]-missingtimeh+0.01) # average exp per activity
             if not np.isscalar(exp):
-                exp.item()
+                exp = exp.item()
             exp_each_act.append(exp)
              
             #con_each_person.append(np.nanmean(remove_none(con_each_act[k*j : (k+1)*j ]) ))      
@@ -369,12 +370,12 @@ def plotact(sub1, sub2,  act, savename="1", simplify = True, select = 0):
     fig.savefig(f'{savedir}exposure_act{savename}.png') 
 
 # known locations
-#for iteration in range (29, 39): 
-#    cal_exp(filedir, savedir2, iteration, real = True, save_csv = True)
+for iteration in range (29, 40): 
+    cal_exp(filedir, savedir2, iteration, real = True, save_csv = True)
 
 
 # simulated locations
-for iteration in range (29, 39):
+for iteration in range (29, 40):
     cal_exp(filedir, savedir, iteration, save_csv = True)
 
 lat = np.array(homework.home_lat).astype(float)
